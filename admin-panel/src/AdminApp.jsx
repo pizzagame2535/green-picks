@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import './admin.css';
-import AdminSectionGames from './AdminSectionGames';
-import AdminSectionFootball from './AdminSectionFootball';
-import AdminSectionLottery from './AdminSectionLottery';
+import AdminSectionGames from './AdminSectionGames.jsx';
+import AdminSectionFootball from './AdminSectionFootball.jsx';
+import AdminSectionLottery from './AdminSectionLottery.jsx';
 
 // ใช้ URL backend จาก .env ถ้าไม่มีให้ fallback เป็น localhost เวลา dev
 export const API_BASE =
