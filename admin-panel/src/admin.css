@@ -1,0 +1,205 @@
+:root {
+  --green-dark: #065f46;
+  --green: #10b981;
+  --green-light: #d1fae5;
+  --bg: #f9fafb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI';
+  background: var(--bg);
+}
+
+.admin-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+.admin-header {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #059669, #16a34a);
+  color: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.admin-header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.admin-header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.admin-token {
+  padding: 12px 20px;
+  background: #ecfdf5;
+  border-bottom: 1px solid #d1fae5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-token label {
+  font-size: 13px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-token input {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #a7f3d0;
+}
+
+.admin-token small {
+  font-size: 11px;
+  color: #065f46;
+}
+
+.admin-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+}
+
+.admin-tabs button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  color: #374151;
+}
+
+.admin-tabs button.active {
+  background: #ecfdf5;
+  color: #065f46;
+  font-weight: 600;
+  border-bottom: 2px solid #10b981;
+}
+
+.admin-main {
+  padding: 16px 20px;
+}
+
+.section h2 {
+  margin-top: 0;
+  color: #065f46;
+}
+
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 16px;
+  background: white;
+  padding: 12px 14px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(15,118,110,0.12);
+  margin-bottom: 14px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-row label {
+  font-size: 12px;
+  color: #374151;
+}
+
+.form-row input,
+.form-row select {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.form-actions button {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.form-actions button[type='submit'] {
+  background: #10b981;
+  color: white;
+}
+
+.form-actions .secondary {
+  background: #e5e7eb;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 8px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-table thead {
+  background: #ecfdf5;
+}
+
+.admin-table img {
+  border-radius: 6px;
+}
+
+.admin-table button {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: none;
+  font-size: 12px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.admin-table button.danger {
+  background: #fecaca;
+  color: #7f1d1d;
+}
+
+.admin-table button:not(.danger) {
+  background: #d1fae5;
+  color: #064e3b;
+}
+
+.warn {
+  font-size: 13px;
+  color: #b45309;
+  background: #fffbeb;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
