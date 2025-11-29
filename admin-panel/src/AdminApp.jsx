@@ -1,1 +1,15 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+import React, { useState } from 'react';
+import AdminSectionGames from './AdminSectionGames';
+import AdminSectionFootball from './AdminSectionFootball';
+import AdminSectionLottery from './AdminSectionLottery';
+
+function AdminApp() {
+  // ... โค้ดของคุณ
+  return (
+    <div className="admin-root">
+      {/* ... */}
+    </div>
+  );
+}
+
+export default AdminApp;   // 👈 ต้องมีบรรทัดนี้
