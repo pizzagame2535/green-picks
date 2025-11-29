@@ -1,215 +1,177 @@
-// src/AdminSectionFootball.jsx
 import React, { useEffect, useState } from 'react';
+import { API_BASE } from './AdminApp.jsx';
 
-export default function FootballSection({ apiBase, token }) {
+export default function AdminSectionFootball() {
   const [tips, setTips] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({
-    league: '',
-    matchTime: '',
-    homeTeam: '',
-    awayTeam: '',
-    pick: '',
-    confidence: 80,
-  });
+  const [loading, setLoading] = useState(true);
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'x-admin-token': token,
-  };
+  const [homeTeam, setHomeTeam] = useState('');
+  const [awayTeam, setAwayTeam] = useState('');
+  const [confidence, setConfidence] = useState(80);
+  const [note, setNote] = useState('');
 
-  async function loadTips() {
-    setLoading(true);
-    try {
-      const res = await fetch(`${apiBase}/api/admin/football`, { headers });
-      const data = await res.json();
-      setTips(data);
-    } catch (err) {
-      console.error(err);
-      alert('โหลดทีเด็ดไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // โหลดทีเด็ดบอล
   useEffect(() => {
-    loadTips();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    const fetchTips = async () => {
+      try {
+        setLoading(true);
 
-  function resetForm() {
-    setForm({
-      league: '',
-      matchTime: '',
-      homeTeam: '',
-      awayTeam: '',
-      pick: '',
-      confidence: 80,
-    });
-    setEditingId(null);
-  }
+        const res = await fetch(`${API_BASE}/api/football-tips`);
+        if (!res.ok) throw new Error('โหลดทีเด็ดบอลไม่สำเร็จ');
 
-  async function handleSubmit(e) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setTips(data);
+        } else {
+          console.warn('รูปแบบข้อมูลทีเด็ดบอลไม่ใช่ array:', data);
+          setTips([]);
+        }
+      } catch (err) {
+        console.error(err);
+        alert(err.message || 'โหลดทีเด็ดบอลไม่สำเร็จ');
+        setTips([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTips();
+  }, []);
+
+  // เพิ่มทีเด็ดใหม่
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const method = editingId ? 'PUT' : 'POST';
-      const url = editingId
-        ? `${apiBase}/api/admin/football/${editingId}`
-        : `${apiBase}/api/admin/football`;
+      const body = {
+        homeTeam,
+        awayTeam,
+        confidence: Number(confidence),
+        note,
+      };
 
-      const res = await fetch(url, {
-        method,
-        headers,
-        body: JSON.stringify(form),
+      const res = await fetch(`${API_BASE}/api/football-tips`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Error');
-      }
+      if (!res.ok) throw new Error('เพิ่มทีเด็ดบอลไม่สำเร็จ');
 
-      await loadTips();
-      resetForm();
+      const newTip = await res.json();
+      setTips((prev) => (Array.isArray(prev) ? [...prev, newTip] : [newTip]));
+
+      setHomeTeam('');
+      setAwayTeam('');
+      setConfidence(80);
+      setNote('');
     } catch (err) {
       console.error(err);
-      alert('บันทึกไม่สำเร็จ: ' + err.message);
+      alert(err.message || 'เพิ่มทีเด็ดบอลไม่สำเร็จ');
     }
-  }
+  };
 
-  function onEdit(tip) {
-    setEditingId(tip._id);
-    setForm({
-      league: tip.league,
-      matchTime: tip.matchTime,
-      homeTeam: tip.homeTeam,
-      awayTeam: tip.awayTeam,
-      pick: tip.pick,
-      confidence: tip.confidence,
-    });
-  }
+  const handleDelete = async (id) => {
+    if (!window.confirm('ต้องการลบทีเด็ดคู่นี้ใช่ไหม ?')) return;
 
-  async function onDelete(id) {
-    if (!window.confirm('ลบทีเด็ดนี้?')) return;
     try {
-      const res = await fetch(`${apiBase}/api/admin/football/${id}`, {
+      const res = await fetch(`${API_BASE}/api/football-tips/${id}`, {
         method: 'DELETE',
-        headers,
       });
-      if (!res.ok) throw new Error('ลบไม่สำเร็จ');
-      await loadTips();
+      if (!res.ok) throw new Error('ลบทีเด็ดบอลไม่สำเร็จ');
+
+      setTips((prev) => prev.filter((t) => t._id !== id));
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      alert(err.message || 'ลบทีเด็ดบอลไม่สำเร็จ');
     }
-  }
+  };
 
   return (
-    <div className="section">
+    <div className="admin-section">
       <h2>⚽ จัดการทีเด็ดบอล</h2>
 
       <form className="admin-form" onSubmit={handleSubmit}>
-        <div className="form-row">
-          <label>ลีก</label>
-          <input
-            value={form.league}
-            onChange={(e) => setForm({ ...form, league: e.target.value })}
-            required
-          />
-        </div>
-        <div className="form-row">
-          <label>เวลาแข่ง (เช่น 20:00 หรือ 2025-11-30 20:00)</label>
-          <input
-            value={form.matchTime}
-            onChange={(e) => setForm({ ...form, matchTime: e.target.value })}
-            required
-          />
-        </div>
-        <div className="form-row">
+        <div className="admin-form-row">
           <label>ทีมเหย้า</label>
           <input
-            value={form.homeTeam}
-            onChange={(e) => setForm({ ...form, homeTeam: e.target.value })}
+            type="text"
+            value={homeTeam}
+            onChange={(e) => setHomeTeam(e.target.value)}
             required
           />
         </div>
-        <div className="form-row">
+        <div className="admin-form-row">
           <label>ทีมเยือน</label>
           <input
-            value={form.awayTeam}
-            onChange={(e) => setForm({ ...form, awayTeam: e.target.value })}
+            type="text"
+            value={awayTeam}
+            onChange={(e) => setAwayTeam(e.target.value)}
             required
           />
         </div>
-        <div className="form-row">
-          <label>ทีมที่แนะนำ / ราคา</label>
-          <input
-            value={form.pick}
-            onChange={(e) => setForm({ ...form, pick: e.target.value })}
-            required
-          />
-        </div>
-        <div className="form-row">
+        <div className="admin-form-row">
           <label>ความมั่นใจ (%)</label>
           <input
             type="number"
             min="0"
             max="100"
-            value={form.confidence}
-            onChange={(e) =>
-              setForm({ ...form, confidence: Number(e.target.value) })
-            }
-            required
+            value={confidence}
+            onChange={(e) => setConfidence(e.target.value)}
+          />
+        </div>
+        <div className="admin-form-row">
+          <label>โน้ต / ราคา / ทิศทาง</label>
+          <input
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
           />
         </div>
 
-        <div className="form-actions">
-          <button type="submit">
-            {editingId ? 'บันทึกการแก้ไข' : 'เพิ่มทีเด็ด'}
-          </button>
-          {editingId && (
-            <button type="button" className="secondary" onClick={resetForm}>
-              ยกเลิกแก้ไข
-            </button>
-          )}
-        </div>
+        <button type="submit" className="admin-btn-primary">
+          เพิ่มทีเด็ด
+        </button>
       </form>
 
-      <hr />
-
-      <h3>รายการทีเด็ด</h3>
-      {loading && <p>กำลังโหลด...</p>}
-      {!loading && tips.length === 0 && <p>ยังไม่มีทีเด็ด</p>}
-
+      <h3>ทีเด็ดบอลวันนี้</h3>
       <table className="admin-table">
         <thead>
           <tr>
-            <th>ลีก</th>
-            <th>เวลา</th>
-            <th>คู่</th>
-            <th>แนะนำ</th>
-            <th>% มั่นใจ</th>
+            <th>คู่แข่ง</th>
+            <th>ความมั่นใจ (%)</th>
+            <th>โน้ต</th>
             <th>จัดการ</th>
           </tr>
         </thead>
         <tbody>
-          {tips.map((t) => (
-            <tr key={t._id}>
-              <td>{t.league}</td>
-              <td>{t.matchTime}</td>
-              <td>
-                {t.homeTeam} vs {t.awayTeam}
-              </td>
-              <td>{t.pick}</td>
-              <td>{t.confidence}%</td>
-              <td>
-                <button onClick={() => onEdit(t)}>แก้ไข</button>
-                <button className="danger" onClick={() => onDelete(t._id)}>
-                  ลบ
-                </button>
-              </td>
+          {loading ? (
+            <tr>
+              <td colSpan="4">กำลังโหลด…</td>
             </tr>
-          ))}
+          ) : !tips || tips.length === 0 ? (
+            <tr>
+              <td colSpan="4">ยังไม่มีทีเด็ดบอลวันนี้</td>
+            </tr>
+          ) : (
+            tips.map((t) => (
+              <tr key={t._id || t.id}>
+                <td>
+                  {t.homeTeam} vs {t.awayTeam}
+                </td>
+                <td>{t.confidence}</td>
+                <td>{t.note || '-'}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="admin-btn-danger"
+                    onClick={() => handleDelete(t._id || t.id)}
+                  >
+                    ลบ
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

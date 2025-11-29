@@ -1,149 +1,138 @@
-// src/AdminSectionGames.jsx
 import React, { useEffect, useState } from 'react';
+import { API_BASE } from './AdminApp.jsx';
 
-export default function GamesSection({ apiBase, token }) {
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({
-    name: '',
-    imageUrl: '',
-    winRate: 90,
-  });
+export default function AdminSectionGames() {
+  const [games, setGames] = useState([]);      // เก็บรายการเกม
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [percent, setPercent] = useState(90);
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'x-admin-token': token,
-  };
-
-  async function loadGames() {
-    setLoading(true);
-    try {
-      const res = await fetch(`${apiBase}/api/admin/games`, { headers });
-      const data = await res.json();
-      setGames(data);
-    } catch (err) {
-      console.error(err);
-      alert('โหลดเกมไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // โหลดเกมแตกดีประจำวัน
   useEffect(() => {
-    loadGames();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    const fetchGames = async () => {
+      try {
+        setLoading(true);
 
-  function resetForm() {
-    setForm({ name: '', imageUrl: '', winRate: 90 });
-    setEditingId(null);
-  }
+        const res = await fetch(`${API_BASE}/api/games`);
+        if (!res.ok) {
+          throw new Error('โหลดเกมไม่สำเร็จ');
+        }
 
-  async function handleSubmit(e) {
+        const data = await res.json();
+
+        // กันกรณี backend ส่งอะไรแปลก ๆ มา
+        if (Array.isArray(data)) {
+          setGames(data);
+        } else {
+          console.warn('รูปแบบข้อมูลเกมไม่ใช่ array:', data);
+          setGames([]);
+        }
+      } catch (err) {
+        console.error('โหลดเกมผิดพลาด:', err);
+        alert(err.message || 'โหลดเกมไม่สำเร็จ');
+        setGames([]);   // อย่าปล่อยเป็น undefined เดี๋ยว .map พัง
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
+  }, []);
+
+  // ส่งฟอร์มเพิ่มเกม
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const method = editingId ? 'PUT' : 'POST';
-      const url = editingId
-        ? `${apiBase}/api/admin/games/${editingId}`
-        : `${apiBase}/api/admin/games`;
+      const body = {
+        name,
+        imageUrl,
+        percent: Number(percent),
+      };
 
-      const res = await fetch(url, {
-        method,
-        headers,
-        body: JSON.stringify(form),
+      const res = await fetch(`${API_BASE}/api/games`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Error');
+        throw new Error('เพิ่มเกมไม่สำเร็จ');
       }
 
-      await loadGames();
-      resetForm();
+      const newGame = await res.json();
+
+      setGames((prev) => Array.isArray(prev) ? [...prev, newGame] : [newGame]);
+      setName('');
+      setImageUrl('');
+      setPercent(90);
     } catch (err) {
-      console.error(err);
-      alert('บันทึกไม่สำเร็จ: ' + err.message);
+      console.error('เพิ่มเกมผิดพลาด:', err);
+      alert(err.message || 'เพิ่มเกมไม่สำเร็จ');
     }
-  }
+  };
 
-  function onEdit(game) {
-    setEditingId(game._id);
-    setForm({
-      name: game.name,
-      imageUrl: game.imageUrl,
-      winRate: game.winRate,
-    });
-  }
+  // ลบเกม (ถ้า backend มี route DELETE)
+  const handleDelete = async (id) => {
+    if (!window.confirm('ต้องการลบเกมนี้ใช่ไหม ?')) return;
 
-  async function onDelete(id) {
-    if (!window.confirm('ลบเกมนี้?')) return;
     try {
-      const res = await fetch(`${apiBase}/api/admin/games/${id}`, {
+      const res = await fetch(`${API_BASE}/api/games/${id}`, {
         method: 'DELETE',
-        headers,
       });
-      if (!res.ok) throw new Error('ลบไม่สำเร็จ');
-      await loadGames();
+      if (!res.ok) throw new Error('ลบเกมไม่สำเร็จ');
+
+      setGames((prev) => prev.filter((g) => g._id !== id));
     } catch (err) {
-      console.error(err);
-      alert(err.message);
+      console.error('ลบเกมผิดพลาด:', err);
+      alert(err.message || 'ลบเกมไม่สำเร็จ');
     }
-  }
+  };
 
   return (
-    <div className="section">
+    <div className="admin-section">
       <h2>🎰 จัดการเกมแตกดี</h2>
 
+      {/* ฟอร์มเพิ่มเกม */}
       <form className="admin-form" onSubmit={handleSubmit}>
-        <div className="form-row">
+        <div className="admin-form-row">
           <label>ชื่อเกม</label>
           <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
           />
         </div>
-        <div className="form-row">
+
+        <div className="admin-form-row">
           <label>ลิงก์รูปภาพ (URL)</label>
           <input
-            value={form.imageUrl}
-            onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+            type="url"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
             required
           />
         </div>
-        <div className="form-row">
-          <label>เปอร์เซ็นแตกดี (%)</label>
+
+        <div className="admin-form-row">
+          <label>เปอร์เซ็นต์แตกดี (%)</label>
           <input
             type="number"
             min="0"
             max="100"
-            value={form.winRate}
-            onChange={(e) =>
-              setForm({ ...form, winRate: Number(e.target.value) })
-            }
-            required
+            value={percent}
+            onChange={(e) => setPercent(e.target.value)}
           />
         </div>
 
-        <div className="form-actions">
-          <button type="submit">
-            {editingId ? 'บันทึกการแก้ไข' : 'เพิ่มเกม'}
-          </button>
-          {editingId && (
-            <button type="button" className="secondary" onClick={resetForm}>
-              ยกเลิกแก้ไข
-            </button>
-          )}
-        </div>
+        <button type="submit" className="admin-btn-primary">
+          เพิ่มเกม
+        </button>
       </form>
 
-      <hr />
-
+      {/* ตารางรายการเกม */}
       <h3>รายการเกมวันนี้</h3>
-      {loading && <p>กำลังโหลด...</p>}
-      {!loading && games.length === 0 && <p>ยังไม่มีเกม</p>}
-
       <table className="admin-table">
         <thead>
           <tr>
@@ -154,25 +143,42 @@ export default function GamesSection({ apiBase, token }) {
           </tr>
         </thead>
         <tbody>
-          {games.map((g) => (
-            <tr key={g._id}>
-              <td>
-                <img
-                  src={g.imageUrl}
-                  alt={g.name}
-                  style={{ width: 60, height: 40, objectFit: 'cover' }}
-                />
-              </td>
-              <td>{g.name}</td>
-              <td>{g.winRate}%</td>
-              <td>
-                <button onClick={() => onEdit(g)}>แก้ไข</button>
-                <button className="danger" onClick={() => onDelete(g._id)}>
-                  ลบ
-                </button>
-              </td>
+          {loading ? (
+            <tr>
+              <td colSpan="4">กำลังโหลด…</td>
             </tr>
-          ))}
+          ) : !games || games.length === 0 ? (
+            <tr>
+              <td colSpan="4">ยังไม่มีข้อมูลเกมวันนี้</td>
+            </tr>
+          ) : (
+            games.map((g) => (
+              <tr key={g._id || g.id}>
+                <td>
+                  {g.imageUrl ? (
+                    <img
+                      src={g.imageUrl}
+                      alt={g.name}
+                      style={{ width: 64, height: 64, objectFit: 'cover' }}
+                    />
+                  ) : (
+                    '-'
+                  )}
+                </td>
+                <td>{g.name}</td>
+                <td>{g.percent}</td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(g._id || g.id)}
+                    className="admin-btn-danger"
+                  >
+                    ลบ
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

@@ -1,184 +1,174 @@
-// src/AdminSectionLottery.jsx
 import React, { useEffect, useState } from 'react';
+import { API_BASE } from './AdminApp.jsx';
 
-export default function LotterySection({ apiBase, token }) {
+export default function AdminSectionLottery() {
   const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({
-    type: 'HANOI',
-    imageUrl: '',
-    caption: '',
-  });
+  const [loading, setLoading] = useState(true);
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'x-admin-token': token,
-  };
+  const [title, setTitle] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [source, setSource] = useState('ฮานอย');
 
-  async function loadItems() {
-    setLoading(true);
-    try {
-      const res = await fetch(`${apiBase}/api/admin/lottery`, { headers });
-      const data = await res.json();
-      setItems(data);
-    } catch (err) {
-      console.error(err);
-      alert('โหลดเลขเด็ดไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // โหลดเลขเด็ด
   useEffect(() => {
-    loadItems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    const fetchItems = async () => {
+      try {
+        setLoading(true);
 
-  function resetForm() {
-    setForm({
-      type: 'HANOI',
-      imageUrl: '',
-      caption: '',
-    });
-    setEditingId(null);
-  }
+        const res = await fetch(`${API_BASE}/api/lottery`);
+        if (!res.ok) throw new Error('โหลดเลขเด็ดไม่สำเร็จ');
 
-  async function handleSubmit(e) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setItems(data);
+        } else {
+          console.warn('รูปแบบข้อมูลหวยไม่ใช่ array:', data);
+          setItems([]);
+        }
+      } catch (err) {
+        console.error(err);
+        alert(err.message || 'โหลดเลขเด็ดไม่สำเร็จ');
+        setItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItems();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const method = editingId ? 'PUT' : 'POST';
-      const url = editingId
-        ? `${apiBase}/api/admin/lottery/${editingId}`
-        : `${apiBase}/api/admin/lottery`;
+      const body = { title, imageUrl, source };
 
-      const res = await fetch(url, {
-        method,
-        headers,
-        body: JSON.stringify(form),
+      const res = await fetch(`${API_BASE}/api/lottery-items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Error');
-      }
+      if (!res.ok) throw new Error('เพิ่มเลขเด็ดไม่สำเร็จ');
 
-      await loadItems();
-      resetForm();
+      const newItem = await res.json();
+      setItems((prev) =>
+        Array.isArray(prev) ? [...prev, newItem] : [newItem]
+      );
+
+      setTitle('');
+      setImageUrl('');
+      setSource('ฮานอย');
     } catch (err) {
       console.error(err);
-      alert('บันทึกไม่สำเร็จ: ' + err.message);
+      alert(err.message || 'เพิ่มเลขเด็ดไม่สำเร็จ');
     }
-  }
+  };
 
-  function onEdit(item) {
-    setEditingId(item._id);
-    setForm({
-      type: item.type,
-      imageUrl: item.imageUrl,
-      caption: item.caption,
-    });
-  }
+  const handleDelete = async (id) => {
+    if (!window.confirm('ต้องการลบเลขเด็ดนี้ใช่ไหม ?')) return;
 
-  async function onDelete(id) {
-    if (!window.confirm('ลบเลขเด็ดนี้?')) return;
     try {
-      const res = await fetch(`${apiBase}/api/admin/lottery/${id}`, {
+      const res = await fetch(`${API_BASE}/api/lottery-items/${id}`, {
         method: 'DELETE',
-        headers,
       });
-      if (!res.ok) throw new Error('ลบไม่สำเร็จ');
-      await loadItems();
+      if (!res.ok) throw new Error('ลบเลขเด็ดไม่สำเร็จ');
+
+      setItems((prev) => prev.filter((i) => i._id !== id));
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      alert(err.message || 'ลบเลขเด็ดไม่สำเร็จ');
     }
-  }
+  };
 
   return (
-    <div className="section">
+    <div className="admin-section">
       <h2>🔢 จัดการเลขเด็ด หวยดัง</h2>
 
       <form className="admin-form" onSubmit={handleSubmit}>
-        <div className="form-row">
-          <label>ประเภทหวย</label>
-          <select
-            value={form.type}
-            onChange={(e) => setForm({ ...form, type: e.target.value })}
-          >
-            <option value="HANOI">ฮานอย</option>
-            <option value="LAOS">ลาว</option>
-            <option value="THAI">ไทย</option>
-          </select>
+        <div className="admin-form-row">
+          <label>ชื่อรายการ / งวด / คำอธิบายสั้น ๆ</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
         </div>
-        <div className="form-row">
+
+        <div className="admin-form-row">
           <label>ลิงก์รูปภาพ (URL)</label>
           <input
-            value={form.imageUrl}
-            onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-            required
-          />
-        </div>
-        <div className="form-row">
-          <label>คำอธิบาย / Caption</label>
-          <input
-            value={form.caption}
-            onChange={(e) => setForm({ ...form, caption: e.target.value })}
+            type="url"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
             required
           />
         </div>
 
-        <div className="form-actions">
-          <button type="submit">
-            {editingId ? 'บันทึกการแก้ไข' : 'เพิ่มเลขเด็ด'}
-          </button>
-          {editingId && (
-            <button type="button" className="secondary" onClick={resetForm}>
-              ยกเลิกแก้ไข
-            </button>
-          )}
+        <div className="admin-form-row">
+          <label>ประเภท</label>
+          <select
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+          >
+            <option value="ฮานอย">ฮานอย</option>
+            <option value="ลาว">ลาว</option>
+            <option value="ไทย">ไทย</option>
+          </select>
         </div>
+
+        <button type="submit" className="admin-btn-primary">
+          เพิ่มเลขเด็ด
+        </button>
       </form>
 
-      <hr />
-
-      <h3>รายการเลขเด็ด</h3>
-      {loading && <p>กำลังโหลด...</p>}
-      {!loading && items.length === 0 && <p>ยังไม่มีเลขเด็ด</p>}
-
+      <h3>เลขเด็ดวันนี้</h3>
       <table className="admin-table">
         <thead>
           <tr>
             <th>รูป</th>
+            <th>ชื่อรายการ</th>
             <th>ประเภท</th>
-            <th>Caption</th>
             <th>จัดการ</th>
           </tr>
         </thead>
         <tbody>
-          {items.map((it) => (
-            <tr key={it._id}>
-              <td>
-                <img
-                  src={it.imageUrl}
-                  alt={it.caption}
-                  style={{ width: 60, height: 40, objectFit: 'cover' }}
-                />
-              </td>
-              <td>
-                {it.type === 'HANOI' && 'ฮานอย'}
-                {it.type === 'LAOS' && 'ลาว'}
-                {it.type === 'THAI' && 'ไทย'}
-              </td>
-              <td>{it.caption}</td>
-              <td>
-                <button onClick={() => onEdit(it)}>แก้ไข</button>
-                <button className="danger" onClick={() => onDelete(it._id)}>
-                  ลบ
-                </button>
-              </td>
+          {loading ? (
+            <tr>
+              <td colSpan="4">กำลังโหลด…</td>
             </tr>
-          ))}
+          ) : !items || items.length === 0 ? (
+            <tr>
+              <td colSpan="4">ยังไม่มีเลขเด็ดวันนี้</td>
+            </tr>
+          ) : (
+            items.map((i) => (
+              <tr key={i._id || i.id}>
+                <td>
+                  {i.imageUrl ? (
+                    <img
+                      src={i.imageUrl}
+                      alt={i.title}
+                      style={{ width: 64, height: 64, objectFit: 'cover' }}
+                    />
+                  ) : (
+                    '-'
+                  )}
+                </td>
+                <td>{i.title}</td>
+                <td>{i.source}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="admin-btn-danger"
+                    onClick={() => handleDelete(i._id || i.id)}
+                  >
+                    ลบ
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
