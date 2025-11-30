@@ -11,22 +11,33 @@ export default function AdminSectionFootball() {
   const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
-    const fetchTips = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${API_BASE}/api/football-tips`);
-        if (!res.ok) throw new Error('โหลดทีเด็ดบอลไม่สำเร็จ');
-        const data = await res.json();
-        if (Array.isArray(data)) setTips(data);
-        else setTips([]);
-      } catch (err) {
-        console.error(err);
-        alert(err.message || 'โหลดทีเด็ดบอลไม่สำเร็จ');
-        setTips([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+const fetchTips = async () => {
+  try {
+    setLoading(true);
+    const res = await fetch(`${API_BASE}/api/football-tips`);
+
+    console.log('football-tips status:', res.status);
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('football-tips error response:', text);
+      throw new Error(`โหลดทีเด็ดบอลไม่สำเร็จ (status ${res.status})`);
+    }
+
+    const data = await res.json();
+    console.log('football-tips data:', data);
+
+    if (Array.isArray(data)) setTips(data);
+    else setTips([]);
+  } catch (err) {
+    console.error(err);
+    alert(err.message || 'โหลดทีเด็ดบอลไม่สำเร็จ');
+    setTips([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
     fetchTips();
   }, []);
