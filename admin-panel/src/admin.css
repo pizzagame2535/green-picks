@@ -3,8 +3,8 @@
   --bg-sidebar: #080018;
   --bg-card: #140628;
   --bg-card-soft: #1b0c33;
-  --primary: #a45cff;
-  --primary-soft: #2f1b55;
+  --primary: #1e063b;
+  --primary-soft: #5d108a;
   --accent-gold: #f5c654;
   --accent-gold-soft: rgba(245, 198, 84, 0.16);
   --text-main: #ffffff;
@@ -24,46 +24,46 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
-  background: radial-gradient(circle at top left, #3b197c, #04000f 55%, #000);
+  background: radial-gradient(circle at top left, #20053e 0, #050013 55%);
   color: var(--text-main);
 }
 
-/* Layout หลัก */
+/* Layout */
 
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  background: radial-gradient(circle at top, #2a0753 0, #050013 50%);
 }
 
 /* Sidebar */
 
 .admin-sidebar {
   width: 260px;
-  background: linear-gradient(180deg, #0e0325 0%, #060012 100%);
-  border-right: 1px solid var(--border-soft);
-  padding: 20px 18px;
+  background: linear-gradient(180deg, #0b0016 0, #050013 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 18px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  box-shadow: 6px 0 20px rgba(0, 0, 0, 0.4);
+  min-height: 100vh;   /* ✅ ทำให้สูงเต็มหน้าจอ */
+  /* ตัด sticky/align-self ทิ้งเพื่อไม่ให้หดตามเนื้อหา */
 }
 
+
 .admin-logo {
-  padding: 10px 12px;
-  border-radius: 16px;
-  background: radial-gradient(circle at top left, #241060, #090019);
-  box-shadow: var(--shadow-soft);
-  border: 1px solid var(--accent-gold-soft);
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .admin-logo-main {
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--accent-gold);
-  font-size: 15px;
 }
 
 .admin-logo-sub {
@@ -71,168 +71,203 @@ body {
   color: var(--text-muted);
 }
 
+/* Sidebar nav */
+
 .admin-nav {
-  margin-top: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .admin-nav button {
-  width: 100%;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  padding: 10px 14px;
+  border: none;
   background: transparent;
   color: var(--text-muted);
-  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 999px;
   text-align: left;
-  cursor: pointer;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: 0.18s ease-out;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 }
 
 .admin-nav button:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-main);
+  transform: translateX(2px);
 }
 
 .admin-nav button.active {
-  background: linear-gradient(90deg, var(--primary), #ff8bff);
-  color: #fff;
-  border-color: var(--accent-gold-soft);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 12px 28px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(120deg, #f97316, #ec4899);
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(248, 113, 113, 0.35);
 }
+
+/* Sidebar footer */
 
 .admin-sidebar-footer {
   margin-top: auto;
-  padding-top: 8px;
   font-size: 11px;
   color: var(--text-muted);
-  border-top: 1px solid var(--border-soft);
+  opacity: 0.8;
 }
 
 /* Main */
 
 .admin-main {
   flex: 1;
-  padding: 20px 28px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+/* Header */
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .admin-header h1 {
+  font-size: 20px;
   margin: 0;
-  font-size: 22px;
-  color: var(--text-main); /* = สีขาว */
+  font-weight: 600;
 }
 
-
-.admin-header h1 {
-  margin: 0;
-  font-size: 22px;
-  color: var(--accent-gold);
-}
-
-.admin-header p {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--text-muted);
-}
+/* Content */
 
 .admin-content {
-  margin-top: 6px;
-}
-
-/* Section / Card */
-
-.admin-section {
-  background: var(--bg-card);
-  border-radius: 20px;
-  padding: 18px 20px 22px;
-  border: 1px solid var(--border-soft);
+  background: radial-gradient(circle at top, #1a0933 0, #050013 80%);
+  border-radius: 16px;
+  padding: 18px 20px;
   box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.admin-section h2 {
-  margin: 0 0 12px;
-  font-size: 18px;
-  color: var(--accent-gold);
-}
-
-/* Form */
+/* Forms */
 
 .admin-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 18px;
-  padding: 14px;
-  border-radius: 16px;
-  background: var(--bg-card-soft);
+  background: var(--bg-card);
+  padding: 14px 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .admin-form-row {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 10px;
 }
 
 .admin-form-row label {
+  width: 110px;
   font-size: 13px;
-  color: var(--accent-gold);
+  color: var(--text-muted);
 }
 
-.admin-form-row input,
+.admin-form-row input[type='text'],
+.admin-form-row input[type='number'],
+.admin-form-row input[type='range'],
 .admin-form-row select {
+  flex: 1;
+  padding: 7px 10px;
   border-radius: 999px;
   border: 1px solid var(--border-soft);
-  padding: 8px 12px;
-  background: rgba(4, 0, 22, 0.9);
+  background: #0b0318;
   color: var(--text-main);
   font-size: 13px;
-  outline: none;
 }
 
-.admin-form-row input[type='file'] {
-  padding: 6px 10px;
+.admin-form-row input[type='text']::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+/* Range + value */
+
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.range-row span {
+  min-width: 40px;
+  text-align: right;
+  font-size: 13px;
+}
+
+/* File input */
+
+.file-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-input-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(8, 0, 34, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: linear-gradient(135deg, #f97316, #ec4899);
+  color: #ffffff;          /* ✅ ทำให้ข้อความเป็นสีขาว */
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.admin-form-row input:focus,
-.admin-form-row select:focus {
-  border-color: var(--accent-gold);
-  box-shadow: 0 0 0 1px rgba(245, 198, 84, 0.28);
+/* เสริมให้แน่ใจว่า span ด้านในก็เป็นสีขาวแน่นอน */
+.file-input-label span {
+  color: #ffffff;
 }
 
-/* Preview รูป */
+.file-input-label .icon {
+  font-size: 14px;
+}
+
+.file-input-label input[type='file'] {
+  display: none;
+}
+
+.file-input-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  max-width: 160px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* Image preview */
 
 .admin-image-preview {
-  grid-column: 1 / -1;
-  margin-top: 4px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed var(--accent-gold-soft);
-  display: inline-flex;
-  flex-direction: column;
-  gap: 6px;
-  max-width: 220px;
+  margin-top: 10px;
+  background: var(--bg-card-soft);
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
 }
 
 .admin-image-preview p {
-  margin: 0;
+  margin: 0 0 6px;
   font-size: 12px;
   color: var(--text-muted);
 }
 
 .admin-image-preview img {
-  width: 100%;
+  max-width: 120px;
   border-radius: 10px;
   object-fit: cover;
 }
@@ -249,28 +284,26 @@ body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  justify-self: flex-start;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7);
-  transition: 0.15s ease-out;
+  box-shadow: 0 0 16px rgba(255, 139, 255, 0.3);
 }
 
 .admin-btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.75);
+  filter: brightness(1.05);
 }
 
-.admin-btn-danger {
+.admin-btn-ghost {
+  margin-top: 8px;
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 77, 106, 0.5);
-  background: rgba(255, 77, 106, 0.12);
-  color: #ff96ac;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #fff;
   font-size: 12px;
   cursor: pointer;
 }
 
-.admin-btn-danger:hover {
-  background: rgba(255, 77, 106, 0.2);
+.admin-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Table */
@@ -279,7 +312,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 14px; /* เนื้อหาตัวใหญ่ขึ้นนิดนึง */
 }
 
 .admin-table thead {
@@ -288,13 +321,14 @@ body {
 
 .admin-table th,
 .admin-table td {
-  padding: 8px 10px;
+  padding: 5px 10px; /* แถวกระชับขึ้น */
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .admin-table th {
   text-align: left;
-  font-weight: 500;
+  font-weight: 700;
+  font-size: 16px; /* หัวตารางใหญ่ขึ้นมาก ๆ */
   color: var(--accent-gold);
 }
 
@@ -313,88 +347,33 @@ body {
     width: 100%;
     flex-direction: row;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .admin-logo {
+    flex: 1;
   }
 
   .admin-nav {
     flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .admin-main {
-    padding: 16px;
+    padding: 12px;
+  }
+
+  .admin-content {
+    padding: 12px;
+  }
+
+  .admin-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-form-row label {
+    width: 100%;
   }
 }
-
-/* ====== File Upload Button (Custom Choose File) ====== */
-
-.file-label-top {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 12px;
-  color: var(--accent-gold); /* ทอง */
-}
-
-.file-input-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.file-input-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: radial-gradient(circle at top left, #3a1a7a, #120327);
-  border: 1px solid rgba(245, 198, 84, 0.6);
-  color: var(--accent-gold);
-  font-size: 13px;
-  cursor: pointer;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7);
-  transition: 0.15s ease-out;
-}
-
-.file-input-label:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.9);
-}
-
-.file-input-label .icon {
-  font-size: 15px;
-}
-
-/* ซ่อน input แบบเดิมไม่ให้เห็นปุ่ม default */
-.file-input-label input[type='file'] {
-  display: none;
-}
-
-.file-input-name {
-  font-size: 11px;
-  color: var(--text-muted);
-  max-width: 170px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ปุ่มลบรูป / เลือกรูปใหม่ */
-.admin-btn-ghost {
-  margin-top: 8px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px dashed rgba(245, 198, 84, 0.8);
-  background: transparent;
-  color: var(--accent-gold);
-  font-size: 12px;
-  cursor: pointer;
-  transition: 0.15s ease-out;
-}
-
-.admin-btn-ghost:hover {
-  background: rgba(245, 198, 84, 0.1);
-  transform: translateY(-1px);
-}
-
-
-

@@ -1,13 +1,16 @@
+// src/AdminApp.jsx
 import React, { useState } from 'react';
 import AdminSectionGames from './AdminSectionGames.jsx';
 import AdminSectionFootball from './AdminSectionFootball.jsx';
 import AdminSectionLottery from './AdminSectionLottery.jsx';
-
-export const API_BASE =
-  import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+import AdminSectionWithdraw from './AdminSectionWithdraw.jsx';
 
 export default function AdminApp() {
   const [tab, setTab] = useState('GAMES');
+
+  // หัวข้อใหญ่ด้านบน (ซ่อนเมื่ออยู่เมนูถอนเงิน)
+  const headerTitle =
+    tab === 'WITHDRAW' ? '' : 'จัดการเกมแตกดี • ทีเด็ดบอล • เลขเด็ด';
 
   return (
     <div className="admin-layout">
@@ -36,6 +39,12 @@ export default function AdminApp() {
           >
             🔢 เลขดัง
           </button>
+          <button
+            className={tab === 'WITHDRAW' ? 'active' : ''}
+            onClick={() => setTab('WITHDRAW')}
+          >
+            💸 ถอนเงิน
+          </button>
         </nav>
 
         <div className="admin-sidebar-footer">
@@ -46,13 +55,14 @@ export default function AdminApp() {
       {/* Main content */}
       <main className="admin-main">
         <header className="admin-header">
-          <h1>จัดการเกมแตกดี • ทีเด็ดบอล • เลขเด็ด</h1>
+          {headerTitle && <h1>{headerTitle}</h1>}
         </header>
 
         <section className="admin-content">
           {tab === 'GAMES' && <AdminSectionGames />}
           {tab === 'FOOTBALL' && <AdminSectionFootball />}
           {tab === 'LOTTERY' && <AdminSectionLottery />}
+          {tab === 'WITHDRAW' && <AdminSectionWithdraw />}
         </section>
       </main>
     </div>

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { API_BASE } from './AdminApp.jsx';
+import { BACKEND_API_BASE } from './config';
+
+const API_BASE = BACKEND_API_BASE;
+
 
 export default function AdminSectionLottery() {
   const [items, setItems] = useState([]);
@@ -130,7 +133,7 @@ const handleClearImage = () => {
           <div className="file-input-wrapper">
             <label className="file-input-label">
               <span className="icon">📁</span>
-              <span>เลือกไฟล์จากเครื่อง</span>
+              <span>เลือกไฟล์</span>
               <input
                 type="file"
                 accept="image/*"
