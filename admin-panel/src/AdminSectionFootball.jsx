@@ -82,19 +82,22 @@ export default function AdminSectionFootball() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('ต้องการลบทีเด็ดนี้ใช่ไหม ?')) return;
-    try {
-      const res = await fetch(`${API_BASE}/api/football-tips/${id}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) throw new Error('ลบทีเด็ดบอลไม่สำเร็จ');
-      setTips((prev) => prev.filter((t) => t._id !== id));
-    } catch (err) {
-      console.error(err);
-      alert(err.message || 'ลบทีเด็ดบอลไม่สำเร็จ');
-    }
-  };
+const handleDelete = async (id) => {
+  if (!window.confirm('ต้องการลบทีเด็ดนี้ใช่ไหม ?')) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/football-tips/${id}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('ลบทีเด็ดบอลไม่สำเร็จ');
+
+    setTips((prev) => prev.filter((t) => (t._id || t.id) !== id));
+  } catch (err) {
+    console.error(err);
+    alert(err.message || 'ลบทีเด็ดบอลไม่สำเร็จ');
+  }
+};
+
+
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0] || null;
