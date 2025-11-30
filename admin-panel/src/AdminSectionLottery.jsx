@@ -5,26 +5,19 @@ export default function AdminSectionLottery() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [title, setTitle] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [source, setSource] = useState('ฮานอย');
+  const [title, setTitle] = useState('');           // 👈 ชื่อรายการเลขเด็ด
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
-  // โหลดเลขเด็ด
   useEffect(() => {
     const fetchItems = async () => {
       try {
         setLoading(true);
-
         const res = await fetch(`${API_BASE}/api/lottery`);
         if (!res.ok) throw new Error('โหลดเลขเด็ดไม่สำเร็จ');
-
         const data = await res.json();
-        if (Array.isArray(data)) {
-          setItems(data);
-        } else {
-          console.warn('รูปแบบข้อมูลหวยไม่ใช่ array:', data);
-          setItems([]);
-        }
+        if (Array.isArray(data)) setItems(data);
+        else setItems([]);
       } catch (err) {
         console.error(err);
         alert(err.message || 'โหลดเลขเด็ดไม่สำเร็จ');
@@ -37,27 +30,50 @@ export default function AdminSectionLottery() {
     fetchItems();
   }, []);
 
+  const uploadImage = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_BASE}/api/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error('อัปโหลดรูปไม่สำเร็จ');
+
+    const data = await res.json();
+    return data.url;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const body = { title, imageUrl, source };
+      if (!imageFile) {
+        alert('กรุณาเลือกรูปเลขเด็ดก่อน');
+        return;
+      }
 
-      const res = await fetch(`${API_BASE}/api/lottery-items`, {
+      const imageUrl = await uploadImage(imageFile);
+
+      const body = {
+        title,                // 👈 ตั้งชื่อเลขเด็ด
+        source: 'ฮานอย',
+        imageUrl,
+      };
+
+      const res = await fetch(`${API_BASE}/api/lottery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-
       if (!res.ok) throw new Error('เพิ่มเลขเด็ดไม่สำเร็จ');
 
       const newItem = await res.json();
-      setItems((prev) =>
-        Array.isArray(prev) ? [...prev, newItem] : [newItem]
-      );
+      setItems((prev) => (Array.isArray(prev) ? [...prev, newItem] : [newItem]));
 
       setTitle('');
-      setImageUrl('');
-      setSource('ฮานอย');
+      setImageFile(null);
+      setImagePreview(null);
     } catch (err) {
       console.error(err);
       alert(err.message || 'เพิ่มเลขเด็ดไม่สำเร็จ');
@@ -66,13 +82,11 @@ export default function AdminSectionLottery() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('ต้องการลบเลขเด็ดนี้ใช่ไหม ?')) return;
-
     try {
-      const res = await fetch(`${API_BASE}/api/lottery-items/${id}`, {
+      const res = await fetch(`${API_BASE}/api/lottery/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('ลบเลขเด็ดไม่สำเร็จ');
-
       setItems((prev) => prev.filter((i) => i._id !== id));
     } catch (err) {
       console.error(err);
@@ -80,42 +94,69 @@ export default function AdminSectionLottery() {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+    setImagePreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  // ล้างรูปที่เลือกไว้
+const handleClearImage = () => {
+  if (imagePreview) {
+    URL.revokeObjectURL(imagePreview);
+  }
+  setImageFile(null);
+  setImagePreview(null);
+};
+
+
   return (
     <div className="admin-section">
       <h2>🔢 จัดการเลขเด็ด หวยดัง</h2>
 
       <form className="admin-form" onSubmit={handleSubmit}>
+        {/* ชื่อรายการเลขเด็ด */}
         <div className="admin-form-row">
-          <label>ชื่อรายการ / งวด / คำอธิบายสั้น ๆ</label>
           <input
             type="text"
+            placeholder="ตั้งชื่อ"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            required
           />
         </div>
 
+        {/* ปุ่มอัปโหลดรูป */}
         <div className="admin-form-row">
-          <label>ลิงก์รูปภาพ (URL)</label>
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            required
-          />
+          <div className="file-input-wrapper">
+            <label className="file-input-label">
+              <span className="icon">📁</span>
+              <span>เลือกไฟล์จากเครื่อง</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </label>
+            {imageFile && (
+              <span className="file-input-name">{imageFile.name}</span>
+            )}
+          </div>
         </div>
 
-        <div className="admin-form-row">
-          <label>ประเภท</label>
-          <select
-            value={source}
-            onChange={(e) => setSource(e.target.value)}
-          >
-            <option value="ฮานอย">ฮานอย</option>
-            <option value="ลาว">ลาว</option>
-            <option value="ไทย">ไทย</option>
-          </select>
-        </div>
+{imagePreview && (
+  <div className="admin-image-preview">
+    <p>ตัวอย่างรูปเลขเด็ด</p>
+    <img src={imagePreview} alt="ตัวอย่างเลขเด็ด" />
+    <button
+      type="button"
+      className="admin-btn-ghost"
+      onClick={handleClearImage}
+    >
+      ลบรูป
+    </button>
+  </div>
+)}
+
 
         <button type="submit" className="admin-btn-primary">
           เพิ่มเลขเด็ด
@@ -127,19 +168,18 @@ export default function AdminSectionLottery() {
         <thead>
           <tr>
             <th>รูป</th>
-            <th>ชื่อรายการ</th>
-            <th>ประเภท</th>
+            <th>ชื่อรายการ</th>   {/* 👈 เพิ่มคอลัมน์ชื่อ */}
             <th>จัดการ</th>
           </tr>
         </thead>
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan="4">กำลังโหลด…</td>
+              <td colSpan="3">กำลังโหลด…</td>
             </tr>
           ) : !items || items.length === 0 ? (
             <tr>
-              <td colSpan="4">ยังไม่มีเลขเด็ดวันนี้</td>
+              <td colSpan="3">ยังไม่มีเลขเด็ดวันนี้</td>
             </tr>
           ) : (
             items.map((i) => (
@@ -148,15 +188,19 @@ export default function AdminSectionLottery() {
                   {i.imageUrl ? (
                     <img
                       src={i.imageUrl}
-                      alt={i.title}
-                      style={{ width: 64, height: 64, objectFit: 'cover' }}
+                      alt={i.title || 'lottery'}
+                      style={{
+                        width: 64,
+                        height: 64,
+                        objectFit: 'cover',
+                        borderRadius: 8,
+                      }}
                     />
                   ) : (
                     '-'
                   )}
                 </td>
-                <td>{i.title}</td>
-                <td>{i.source}</td>
+                <td>{i.title || '-'}</td>
                 <td>
                   <button
                     type="button"

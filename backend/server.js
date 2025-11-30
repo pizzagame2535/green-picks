@@ -3,6 +3,24 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // จำกัดขนาดไฟล์ 5MB
+  },
+});
+
+
+
 const Game = require('./models/Game');
 const FootballTip = require('./models/FootballTip');
 const LotteryItem = require('./models/LotteryItem');
@@ -10,6 +28,34 @@ const LotteryItem = require('./models/LotteryItem');
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// อัปโหลดรูปไป Cloudinary
+app.post('/api/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'ไม่พบไฟล์ที่อัปโหลด' });
+    }
+
+    // แปลง buffer → data URI ให้ Cloudinary ใช้
+    const fileStr =
+      'data:' +
+      req.file.mimetype +
+      ';base64,' +
+      req.file.buffer.toString('base64');
+
+    const result = await cloudinary.uploader.upload(fileStr, {
+      folder: 'green-picks', // ตั้งชื่อโฟลเดอร์ใน Cloudinary ตามใจคุณ
+    });
+
+    return res.json({ url: result.secure_url });
+  } catch (err) {
+    console.error('Upload error:', err);
+    return res
+      .status(500)
+      .json({ message: 'อัปโหลดรูปไม่สำเร็จ', error: err.message });
+  }
+});
+
 
 const PORT = process.env.PORT || 4000;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
@@ -45,14 +91,18 @@ app.get('/api/games', async (req, res) => {
 });
 
 // ทีเด็ดบอล
-app.get('/api/football-tips', async (req, res) => {
+app.post('/api/football-tips', async (req, res) => {
   try {
-    const tips = await FootballTip.find().sort({ createdAt: -1 }).limit(5);
-    res.json(tips);
+    const { confidence, imageUrl } = req.body;
+    const tip = new FootballTip({ confidence, imageUrl });
+    await tip.save();
+    res.json(tip);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('create football tip error', err);
+    res.status(500).json({ error: 'Failed to create football tip' });
   }
 });
+
 
 // เลขเด็ด
 app.get('/api/lottery', async (req, res) => {
