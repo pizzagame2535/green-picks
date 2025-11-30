@@ -90,19 +90,6 @@ app.get('/api/games', async (req, res) => {
   }
 });
 
-// ทีเด็ดบอล
-app.post('/api/football-tips', async (req, res) => {
-  try {
-    const { confidence, imageUrl } = req.body;
-    const tip = new FootballTip({ confidence, imageUrl });
-    await tip.save();
-    res.json(tip);
-  } catch (err) {
-    console.error('create football tip error', err);
-    res.status(500).json({ error: 'Failed to create football tip' });
-  }
-});
-
 
 // เลขเด็ด
 app.get('/api/lottery', async (req, res) => {
@@ -161,57 +148,45 @@ app.delete('/api/admin/games/:id', checkAdmin, async (req, res) => {
   }
 });
 
-// -------- FOOTBALL ----------
-app.get('/api/admin/football', checkAdmin, async (req, res) => {
+// -------- FOOTBALL (tips แบบรูป + ความมั่นใจ) ----------
+app.get('/api/football-tips', async (req, res) => {
   try {
     const tips = await FootballTip.find().sort({ createdAt: -1 });
     res.json(tips);
   } catch (err) {
+    console.error('get football tips error', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-app.post('/api/admin/football', checkAdmin, async (req, res) => {
+app.post('/api/football-tips', async (req, res) => {
   try {
-    const { league, matchTime, homeTeam, awayTeam, pick, confidence } = req.body;
+    const { title, confidence, imageUrl } = req.body; // ให้ตรงกับหน้า Admin
+
     const tip = await FootballTip.create({
-      league,
-      matchTime,
-      homeTeam,
-      awayTeam,
-      pick,
-      confidence
+      title,
+      confidence,
+      imageUrl,
     });
+
     res.json(tip);
   } catch (err) {
+    console.error('create football tip error', err);
     res.status(400).json({ message: 'Bad request', error: err.message });
   }
 });
 
-app.put('/api/admin/football/:id', checkAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { league, matchTime, homeTeam, awayTeam, pick, confidence } = req.body;
-    const tip = await FootballTip.findByIdAndUpdate(
-      id,
-      { league, matchTime, homeTeam, awayTeam, pick, confidence },
-      { new: true }
-    );
-    res.json(tip);
-  } catch (err) {
-    res.status(400).json({ message: 'Bad request', error: err.message });
-  }
-});
-
-app.delete('/api/admin/football/:id', checkAdmin, async (req, res) => {
+app.delete('/api/football-tips/:id', async (req, res) => {
   try {
     const { id } = req.params;
     await FootballTip.findByIdAndDelete(id);
     res.json({ message: 'Deleted' });
   } catch (err) {
+    console.error('delete football tip error', err);
     res.status(400).json({ message: 'Bad request', error: err.message });
   }
 });
+
 
 // -------- LOTTERY ----------
 app.get('/api/admin/lottery', checkAdmin, async (req, res) => {
